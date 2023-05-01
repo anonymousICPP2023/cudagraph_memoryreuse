@@ -9,7 +9,7 @@ void sort_short_lifetime(Graph *graph)
 	graph->idx = (int *)malloc(sizeof(int) * graph->nodenum);
 
 	for (i = 0; i < graph->nodenum; i++){
-		*(num + i) = (*(graph->node + i)).end - (*(graph->node + i)).data;
+		*(num + i) = (*(graph->node + i)).end - (*(graph->node + i)).ID;
 		*(graph->idx + i) = i;
 	}
 
