@@ -128,3 +128,19 @@ void dump_result(FILE *fp, Graph *graph, struct timeval tv[2],
 			memory_size - min,
 			(tv[1].tv_sec - tv[0].tv_sec) * 1000000 + tv[1].tv_usec - tv[0].tv_usec);
 }
+
+int destoryGraph(Graph *graph){
+    Node *node;
+
+    for (int i = 0; i < graph->nodenum; i++) {
+        node = graph->node + i;
+        if (node->adj_num) {
+            free(node->adj_idx);
+        }
+    }
+
+    free(graph->node);
+
+    return 0;
+
+}

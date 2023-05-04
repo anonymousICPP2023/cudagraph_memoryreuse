@@ -62,8 +62,9 @@ int short_lifetime_first(Graph *graph, int step);
 
 void swap(int* a,int* b);
 
-int createGraphByFile(Graph *a,char *filename);
+int createGraphByFile(Graph *graph,char *filename);
 
 void dump_result(FILE *fp, Graph *graph, struct timeval tv[2], int memory_size, int min, enum algorithmType type);
 
+int destoryGraph(Graph *graph);
 #endif

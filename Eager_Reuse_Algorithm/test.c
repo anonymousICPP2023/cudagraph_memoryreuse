@@ -200,5 +200,7 @@ int main(int argc,char** argv)
 
 	fclose(fp);
 
+    destoryGraph(&graph);
+
 	return 0;
 }
