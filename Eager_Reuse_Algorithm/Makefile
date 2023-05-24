@@ -1,5 +1,5 @@
-memory_reuse_test:common.o short_lifetime_first.o large_tensor_first.o eager_reuse.o test.o
-	gcc -g -o memory_reuse_test common.o short_lifetime_first.o large_tensor_first.o eager_reuse.o test.o
+memory_reuse_test:common.o short_lifetime_first.o large_tensor_first.o eager_reuse.o test.o global_optimization.o
+	gcc -g -o memory_reuse_test common.o short_lifetime_first.o large_tensor_first.o eager_reuse.o test.o global_optimization.o
 
 test.o: test.c
 	gcc -c test.c
@@ -18,6 +18,9 @@ short_lifetime_first.o:short_lifetime_first.c
 
 large_tensor_first.o:large_tensor_first.c 
 	gcc -c large_tensor_first.c
+
+global_optimization.o:global_optimization.c
+	gcc -c global_optimization.c
 
 clean:
 	rm -rf *.o

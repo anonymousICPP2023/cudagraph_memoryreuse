@@ -21,6 +21,7 @@ typedef struct Node_st{
 
 typedef struct graph_st{
 	Node *node;
+	Node *origin;
 	int nodenum;
 	int edgenum;
 	int *idx;
@@ -38,7 +39,20 @@ enum algorithmType{
     large_tensor_first_v1_type,
     large_tensor_first_v2_type,
     short_lifetime_first_type,
+    global_optimization_type,
 };
+
+typedef struct global_opt_st{
+	int *flag;
+	int *result;
+	int count;
+	int memory_size;
+	long idxnum;
+	int nodenum;
+	int *index;
+	int **idx;
+	Graph graph;
+} Global_opt;
 
 int is_lifetime_overlap(Node *cmp_node, Node *cur_node);
 
@@ -59,6 +73,12 @@ int large_tensor_first_v2(Graph *graph, int step);
 void sort_short_lifetime(Graph *graph);
 
 int short_lifetime_first(Graph *graph, int step);
+
+int sum_permutation(int N);
+
+void full_permutation(Global_opt *Opt, int level);
+
+int global_optimization(Graph *graph, int step);
 
 void swap(int* a,int* b);
 

@@ -47,7 +47,7 @@ int large_tensor_first_v2(Graph *graph, int step)
 	int i, j, flag;
 	int top = MIN;
 	int bottom = MAX;
-	int *p;
+	int *p = NULL;
 	int overlap_count = 0;
 	int temp0, temp1;
 
@@ -114,6 +114,9 @@ int large_tensor_first_v2(Graph *graph, int step)
 	}
 
 final:
+	if (p) {
+		free(p);
+	}
 	cur_node->addr = top;
 	return 0;
 }

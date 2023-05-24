@@ -12,33 +12,34 @@ We have implemented three algorithms in C.
 For the large tensor first algorithm, we implemented two versions: v2, v1. Compared with v1, v2 always has better performance. We use v2 for testing by default, while v1 is also in the test.c.    
 
 
-## (2) Evaluation Platform
+## (2) Evaluation platform
 
 We are simulating based on C language, and gcc environment is enough. Ubuntu 22.04 is recommended.
 
 
-## (3) how to compile
+## (3) How to compile
 
 ```
 $ make
 ```
 
 
-## (4) how to test
+## (4) How to test
 
 ```
 $ ./test.sh
 ```
-Simple results output in screen, More details can be viewed in 'result/'.
+Simple results output in screen, and more details can be viewed in 'result/' and 'visual_result/'.
 
 
-## (5) how to change graph
+## (5) How to change graph
 
 Modify the content of 'input/input0', the format is as follows:
 We use Figure 1 as an example for illustration.
 ![Figure 1](Figure1.png)
+<figcaption>Figure 1</figcaption>
 
-Each line includes node ID, its output tensor size,  the number of adjacent nodes. if the number is greater than zero, the subsequent number represents the ID of adjacent node.
+Each line includes node ID, its output tensor size, the number of adjacent nodes. If the number is greater than zero, the subsequent number represents the ID of adjacent node.
 
 |Node_ID|Tensor_size|Adjacent_nodes_num|Adjacent_nodes_id|
 |:---:|:---:|:---:|:---:|
@@ -53,3 +54,66 @@ Each line includes node ID, its output tensor size,  the number of adjacent node
   - note2: Our algorithm supports the scheduling order of breadth search by default, and more scheduling algorithm support belongs to our future work.
 
 After change the graph and test it, the result can be viewed in 'result/result0'. 
+The following is the text result of input0.
+```
+----------------output the graph in adjacency list----------------
+ [1]----->[2]----->[3]
+ [2]----->[4]
+ [3]----->[5]
+ [4]----->[6]
+ [5]----->[6]
+ [6]----->[7]
+ [7]
+
+Eager Reuse		:
+Tensor_ID[ 1]	Base_address[ 1]	Base+Size[ 4]	lifetime_begin[ 1]	lifetime_end[ 3]
+Tensor_ID[ 2]	Base_address[ 4]	Base+Size[ 6]	lifetime_begin[ 2]	lifetime_end[ 4]
+Tensor_ID[ 3]	Base_address[ 9]	Base+Size[15]	lifetime_begin[ 3]	lifetime_end[ 5]
+Tensor_ID[ 4]	Base_address[ 0]	Base+Size[ 4]	lifetime_begin[ 4]	lifetime_end[ 6]
+Tensor_ID[ 5]	Base_address[ 4]	Base+Size[ 9]	lifetime_begin[ 5]	lifetime_end[ 6]
+Tensor_ID[ 6]	Base_address[ 9]	Base+Size[10]	lifetime_begin[ 6]	lifetime_end[ 7]
+Tensor_ID[ 7]	Base_address[ 9]	Base+Size[ 9]	lifetime_begin[ 7]	lifetime_end[ 7]
+Eager Reuse		 Result:	memory_size=15	overhead=25 us
+
+
+Large tensor first	:
+Tensor_ID[ 1]	Base_address[ 6]	Base+Size[ 9]	lifetime_begin[ 1]	lifetime_end[ 3]
+Tensor_ID[ 2]	Base_address[ 9]	Base+Size[11]	lifetime_begin[ 2]	lifetime_end[ 4]
+Tensor_ID[ 3]	Base_address[ 0]	Base+Size[ 6]	lifetime_begin[ 3]	lifetime_end[ 5]
+Tensor_ID[ 4]	Base_address[11]	Base+Size[15]	lifetime_begin[ 4]	lifetime_end[ 6]
+Tensor_ID[ 5]	Base_address[ 6]	Base+Size[11]	lifetime_begin[ 5]	lifetime_end[ 6]
+Tensor_ID[ 6]	Base_address[ 0]	Base+Size[ 1]	lifetime_begin[ 6]	lifetime_end[ 7]
+Tensor_ID[ 7]	Base_address[ 0]	Base+Size[ 0]	lifetime_begin[ 7]	lifetime_end[ 7]
+Large tensor first	 Result:	memory_size=15	overhead=2 us
+
+
+Short lifetime first	:
+Tensor_ID[ 1]	Base_address[ 0]	Base+Size[ 3]	lifetime_begin[ 1]	lifetime_end[ 3]
+Tensor_ID[ 2]	Base_address[ 3]	Base+Size[ 5]	lifetime_begin[ 2]	lifetime_end[ 4]
+Tensor_ID[ 3]	Base_address[ 5]	Base+Size[11]	lifetime_begin[ 3]	lifetime_end[ 5]
+Tensor_ID[ 4]	Base_address[11]	Base+Size[15]	lifetime_begin[ 4]	lifetime_end[ 6]
+Tensor_ID[ 5]	Base_address[ 0]	Base+Size[ 5]	lifetime_begin[ 5]	lifetime_end[ 6]
+Tensor_ID[ 6]	Base_address[ 5]	Base+Size[ 6]	lifetime_begin[ 6]	lifetime_end[ 7]
+Tensor_ID[ 7]	Base_address[ 0]	Base+Size[ 0]	lifetime_begin[ 7]	lifetime_end[ 7]
+Short lifetime first	 Result:	memory_size=15	overhead=0 us
+
+
+Global Optimization	:
+Tensor_ID[ 1]	Base_address[ 0]	Base+Size[ 3]	lifetime_begin[ 1]	lifetime_end[ 3]
+Tensor_ID[ 2]	Base_address[ 3]	Base+Size[ 5]	lifetime_begin[ 2]	lifetime_end[ 4]
+Tensor_ID[ 3]	Base_address[ 5]	Base+Size[11]	lifetime_begin[ 3]	lifetime_end[ 5]
+Tensor_ID[ 4]	Base_address[11]	Base+Size[15]	lifetime_begin[ 4]	lifetime_end[ 6]
+Tensor_ID[ 5]	Base_address[ 0]	Base+Size[ 5]	lifetime_begin[ 5]	lifetime_end[ 6]
+Tensor_ID[ 6]	Base_address[ 5]	Base+Size[ 6]	lifetime_begin[ 6]	lifetime_end[ 7]
+Tensor_ID[ 7]	Base_address[ 6]	Base+Size[ 6]	lifetime_begin[ 7]	lifetime_end[ 7]
+Global Optimization	 Result:	memory_size=15	overhead=1911 us
+```
+
+
+## (6) Visualization of output results
+
+We generate the visualization of output results by gnuplot, which could be viewed in 'visual_result/'.
+We use Figure 2 as an example for illustration, the figure is the visual result of input0.
+
+![Figure 2](Figure2.png)
+<figcaption>Figure 2</figcaption>

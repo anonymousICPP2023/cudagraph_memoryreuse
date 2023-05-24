@@ -24,16 +24,11 @@ int createGraphByFile(Graph *graph,char *filename) {
 	graph->node = (Node *)calloc(graph->nodenum, sizeof(Node));
 
 	i = 0;
-	while(!feof(fp)){
+	while(1){
 		node = graph->node + i;
 		fscanf(fp,"%d", &node->ID);
 		fscanf(fp,"%d", &node->size);
 		fscanf(fp,"%d", &node->adj_num);
-		node->done = 0;
-		node->indegree = 0;
-		node->tag = 0;
-		node->addr = 0;
-		node->adj_idx = NULL;
 		node->end = node->ID; //assume schedule according to breadth first
 
 		if (node->adj_num) {
@@ -46,8 +41,15 @@ int createGraphByFile(Graph *graph,char *filename) {
 			node->end = node->adj_idx[node->adj_num - 1];
 		}
 		i++;
+		if (i >= graph->nodenum) {
+			break;
+		}
 	}
 
+	graph->origin = (Node *)calloc(graph->nodenum, sizeof(Node));
+	for (i = 0; i < graph->nodenum; i++) {
+		*(graph->origin + i) = *(graph->node + i);
+	}
 	fclose(fp);
 	return 0;
 }
@@ -106,6 +108,10 @@ void dump_result(FILE *fp, Graph *graph, struct timeval tv[2],
 			break;
 		case eager_reuse_type:
 			sprintf(algorithm, "Eager Reuse\t\t");
+			break;
+		case global_optimization_type:
+			sprintf(algorithm, "Global Optimization\t");
+			break;
 
 	}
 
@@ -131,6 +137,8 @@ void dump_result(FILE *fp, Graph *graph, struct timeval tv[2],
 
 int destoryGraph(Graph *graph){
     Node *node;
+
+    free(graph->origin);
 
     for (int i = 0; i < graph->nodenum; i++) {
         node = graph->node + i;

@@ -8,6 +8,7 @@ int eager_reuse_test(Graph graph, FILE *fp){
 	Node *first_node, *middle_node, *last_node;
 	int min = 0;
 	int max = 0;
+	int i;
 
 	structure = (Three_layers *)malloc(sizeof(Three_layers));
 	structure->next = NULL;
@@ -58,6 +59,9 @@ int eager_reuse_test(Graph graph, FILE *fp){
 	gettimeofday(&tv[1], NULL);
 
 	dump_result(fp, &graph, tv, max, min, type);
+	for (i = 0; i < graph.nodenum; i++) {
+		*(graph.node + i) = *(graph.origin + i);
+	}
 
 	return 0;
 }
@@ -89,6 +93,9 @@ int large_tensor_first_v1_test(Graph graph, FILE *fp){
 	gettimeofday(&tv[1], NULL);
 
 	dump_result(fp, &graph, tv, memory_size, 0, type);
+	for (i = 0; i < graph.nodenum; i++) {
+		*(graph.node + i) = *(graph.origin + i);
+	}
 
 	return 0;
 }
@@ -119,6 +126,9 @@ int large_tensor_first_v2_test(Graph graph, FILE *fp)
 	gettimeofday(&tv[1], NULL);
 
 	dump_result(fp, &graph, tv, memory_size, 0, type);
+	for (i = 0; i < graph.nodenum; i++) {
+		*(graph.node + i) = *(graph.origin + i);
+	}
 
 	return 0;
 }
@@ -145,14 +155,85 @@ int short_lifetime_first_test(Graph graph, FILE *fp)
 		cur_node = *(graph.node + *(graph.idx + i));
 		this_top = cur_node.addr + cur_node.size;
 
-		if (memory_size < this_top){
+		if (memory_size < this_top) {
 			memory_size = this_top;
 		}
 	}
 	gettimeofday(&tv[1], NULL);
 
 	dump_result(fp, &graph, tv, memory_size, 0, type);
+	for (i = 0; i < graph.nodenum; i++) {
+		*(graph.node + i) = *(graph.origin + i);
+	}
 
+	return 0;
+}
+
+int global_optimization_test(Graph graph, FILE *fp)
+{
+	int i, j;
+	Graph graph_tmp;
+	enum algorithmType type=global_optimization_type;
+	int memory_size = 0;
+	int this_top;
+	int ret = 0;
+	Node cur_node;
+	struct timeval tv[2];
+	Global_opt *Opt = (Global_opt *)calloc(1, sizeof(Global_opt));
+	Node *opt_node = (Node *)calloc(graph.nodenum, sizeof(Node));
+
+	Opt->nodenum = graph.nodenum;
+	Opt->memory_size = MAX;
+	Opt->idxnum = sum_permutation(graph.nodenum);
+	Opt->flag = (int *)calloc(graph.nodenum, sizeof(int));
+	Opt->result = (int *)calloc(graph.nodenum, sizeof(int));
+	Opt->index = (int *)calloc(graph.nodenum, sizeof(int));
+	Opt->idx = (int **)calloc(Opt->idxnum, sizeof(int *));
+
+	for (i = 0; i < Opt->idxnum; i++) {
+		Opt->idx[i] = (int *)calloc(graph.nodenum, sizeof(int));
+	}
+	for (i = 0; i < graph.nodenum; i++) {
+		Opt->index[i] = i;
+	}
+
+	full_permutation(Opt, 0);
+
+	gettimeofday(&tv[0], NULL);
+	for (i = 0; i < Opt->idxnum; i++) {
+		graph_tmp = graph;
+		graph_tmp.idx = Opt->idx[i];
+		memory_size = 0;
+		for (j = 0; j < Opt->nodenum; j++) {
+			ret = global_optimization(&graph_tmp, j);
+			if (ret)
+				return 1;
+			cur_node = *(graph_tmp.node + *(graph_tmp.idx + j));
+			this_top = cur_node.addr + cur_node.size;
+			if (memory_size < this_top) {
+				memory_size = this_top;
+			}
+		}
+		if (Opt->memory_size > memory_size) {
+			Opt->memory_size = memory_size;
+			Opt->graph = graph_tmp;
+			for (j = 0; j < graph.nodenum; j++) {
+				*(opt_node + j) = *(graph_tmp.node + j);
+			}
+		}
+
+	}
+	memory_size = Opt->memory_size;
+	graph = Opt->graph;
+	for (i = 0; i < graph.nodenum; i++) {
+		*(graph.node + i) = *(opt_node + i);
+	}
+	gettimeofday(&tv[1], NULL);
+	dump_result(fp, &graph, tv, memory_size, 0, type);
+	for (i = 0; i < graph.nodenum; i++) {
+		*(graph.node + i) = *(graph.origin + i);
+	}
+	free(opt_node);
 	return 0;
 }
 
@@ -195,6 +276,10 @@ int main(int argc,char** argv)
 	   */
 
 	ret = short_lifetime_first_test(graph, fp);
+	if (ret)
+		printf("short lifetime first test failed!!!\n");
+
+	ret = global_optimization_test(graph, fp);
 	if (ret)
 		printf("short lifetime first test failed!!!\n");
 
